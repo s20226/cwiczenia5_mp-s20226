@@ -1,6 +1,7 @@
-using Cw5.Services;
+using Cw7.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,8 +20,8 @@ namespace Cw7
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-           // services.AddScoped<IWarehouseDBService, SqlDbService>();
+            services.AddDbContext<Models.MasterContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultDbConnection")));
+            services.AddScoped<IDbService, DbService>();
             services.AddControllers().AddNewtonsoftJson();
         }
 
