@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
@@ -22,7 +20,7 @@ namespace Cw7.Models
         public virtual DbSet<Country> Countries { get; set; }
         public virtual DbSet<CountryTrip> CountryTrips { get; set; }
         public virtual DbSet<Trip> Trips { get; set; }
- 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");

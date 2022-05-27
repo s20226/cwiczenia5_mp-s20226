@@ -13,7 +13,7 @@ namespace Cw7.Services
         private readonly MasterContext _dbContext;
         public DbService(MasterContext dbContext)
         {
-            _dbContext =  dbContext;
+            _dbContext = dbContext;
         }
 
         public async Task<IEnumerable<object>> GetTrips()
@@ -29,14 +29,15 @@ namespace Cw7.Services
                     DateFrom = e.DateFrom,
                     DateTo = e.DateTo,
                     Countries = e.CountryTrips.Select(e => new SomeSortOfCountry { Name = e.IdCountryNavigation.Name }).ToList(),
-                    Clients = e.ClientTrips.Select(e=> new SomeSortOfClient { FirstName = e.IdClientNavigation.FirstName, LastName = e.IdClientNavigation.LastName}).ToList()
+                    Clients = e.ClientTrips.Select(e => new SomeSortOfClient { FirstName = e.IdClientNavigation.FirstName, LastName = e.IdClientNavigation.LastName }).ToList()
 
-                }).OrderByDescending(e=> e.DateFrom).ToListAsync();
-            
+                }).OrderByDescending(e => e.DateFrom).ToListAsync();
+
         }
 
-        public async Task<bool> CheckIfClientisAssigned()
+        public async Task<bool> CheckIfClientIsAssignedToTrip(int idClient, int idTrip)
         {
+            return await _dbContext.ClientTrips.AnyAsync(e => e.IdClient == idClient && e.IdTrip == idTrip);
 
         }
 
@@ -48,32 +49,32 @@ namespace Cw7.Services
 
         public async Task AddClient(Client client)
         {
-            _dbContext.Add(client);
+            await _dbContext.AddAsync(client);
             await _dbContext.SaveChangesAsync();
         }
 
 
-        public async Task<bool> CheckTrip(int id)
+        public async Task<bool> CheckTrip(int idTrip)
         {
-            return await _dbContext.Trips.AnyAsync(e => e.IdTrip == id);
+            return await _dbContext.Trips.AnyAsync(e => e.IdTrip == idTrip);
         }
-        
+
         public async Task<bool> RemoveClient(int idClient)
         {
             var client = new Client() { IdClient = idClient };
 
-            //       await _dbContext.ClientTrips.Where(e => e.IdClient == client.IdClient)
-            if(await _dbContext.ClientTrips.AnyAsync(e => e.IdClient == idClient))
+
+            if (await _dbContext.ClientTrips.AnyAsync(e => e.IdClient == idClient))
             {
                 return false;
             }
-                          
-            
+
+
 
             _dbContext.Attach(client);
             _dbContext.Remove(client);
 
-           // var trip = await _dbContext.Trips.Where(e => e.IdTrip == id).FirstOrDefaultAsync();
+            // var trip = await _dbContext.Trips.Where(e => e.IdTrip == id).FirstOrDefaultAsync();
 
             //var trip = new Trip() { IdTrip = id };
             ////dodawanie
@@ -93,6 +94,34 @@ namespace Cw7.Services
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task AssignClientToTrip(int idClient, int idTrip, DateTime? paymentDate)
+        {
+            
+            var clientTrip = new ClientTrip
+            {
+                IdClient = idClient,
+                IdTrip = idTrip,
+                PaymentDate = paymentDate,
+                RegisteredAt = DateTime.Now
+            };
+
+            await _dbContext.AddAsync(clientTrip);
+
+            await _dbContext.SaveChangesAsync();
+
+        }
+
+        public async Task<int> GetClientIdByPesel(string pesel)
+        {
+
+            var id = await _dbContext.Clients.Where(e => e.Pesel.Equals(pesel)).Select(c => new
+            {
+                idClient = c.IdClient
+            }).FirstOrDefaultAsync();
+
+
+            return id.idClient;
+        }
     }
 }
-  
